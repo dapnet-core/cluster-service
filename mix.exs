@@ -14,7 +14,7 @@ defmodule Cluster.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      applications: [:cowboy, :plug],
+      applications: [:cowboy, :plug, :httpoison, :amqp, :timex],
       extra_applications: [:logger],
       mod: {Cluster.Application, []}
     ]
@@ -24,7 +24,11 @@ defmodule Cluster.MixProject do
   defp deps do
     [
       {:cowboy, "~> 2.0"},
-      {:plug, "~> 1.0"}
+      {:plug, "~> 1.0"},
+      {:amqp, "~> 1.0.3"},
+      {:httpoison, "~> 1.1.1"},
+      {:timex, "~> 3.1"},
+      {:couchdb, github: "7h0ma5/elixir-couchdb"}
     ]
   end
 end

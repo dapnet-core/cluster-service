@@ -28,3 +28,17 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+use Mix.Config
+
+config :cluster, Cluster.Discovery,
+  seed: %{
+    "db0sda-dc1" => %{
+      "host" => "dapnetdc1.db0sda.ampr.org"
+    },
+    "db0sda-dc2" => %{
+      "host" => "dapnetdc2.db0sda.ampr.org"
+    },
+    "db0sda-dc3" => %{
+      "host" => "dapnetdc3.db0sda.ampr.org"
+    }
+  }
