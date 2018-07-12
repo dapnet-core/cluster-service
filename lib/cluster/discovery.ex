@@ -30,7 +30,7 @@ defmodule Cluster.Discovery do
     Logger.info("Starting node discovery.")
     body = %{
       name: System.get_env("NODE_NAME"),
-      auth_key: System.get_env("NODE_AUTH_KEY")
+      auth_key: System.get_env("NODE_AUTHKEY")
     } |> Poison.encode!
 
     Enum.map(nodes, fn {node, params} ->
@@ -45,7 +45,6 @@ defmodule Cluster.Discovery do
             {:ok, data} -> node_data = Map.get(data, node)
             if node_data do
               Logger.info("Reached #{node}!")
-              IO.inspect node_data
               {node, node_data}
             else
               Logger.warn("Could not read response from #{node}!")

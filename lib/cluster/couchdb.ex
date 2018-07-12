@@ -46,13 +46,14 @@ defmodule Cluster.CouchDB do
   def handle_cast({:sync_with, node, params}, server) do
     Logger.info("Sync CouchDB with #{node}")
 
+    host = params["host"]
     user = params["couchdb"]["user"]
     auth_key = params["couchdb"]["password"]
 
     @databases
     |> Enum.each(fn db ->
       local_url = CouchDB.Server.url(server, "/#{db}")
-      remote_url = "http://#{user}:#{auth_key}@#{node}:5984/#{db}"
+      remote_url = "http://#{user}:#{auth_key}@#{host}:5984/#{db}"
 
       options = [create_target: false, continuous: true]
 
