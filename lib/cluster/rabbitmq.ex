@@ -22,7 +22,7 @@ defmodule Cluster.RabbitMQ do
     name = System.get_env("NODE_NAME")
     auth_key = System.get_env("NODE_AUTHKEY")
 
-    case Connection.open("amqp://core-#{name}:#{auth_key}@rabbitmq") do
+    case Connection.open("amqp://node-#{name}:#{auth_key}@rabbitmq") do
       {:ok, conn} ->
         Logger.info("Connection to RabbitMQ successful.")
 
@@ -79,7 +79,7 @@ defmodule Cluster.RabbitMQ do
     auth_key = System.get_env("NODE_AUTHKEY")
 
     url = "http://rabbitmq:15672/api/parameters/federation-upstream/%2f/#{node}"
-    params = %{value: %{"uri": "amqp://core-#{name}:#{auth_key}@#{node}",
+    params = %{value: %{"uri": "amqp://node-#{name}:#{auth_key}@#{node}",
                         "expires": 3600000,
                         "max-hops": 3
                        }} |> Poison.encode!
@@ -121,7 +121,7 @@ defmodule Cluster.RabbitMQ do
     name = System.get_env("NODE_NAME")
     auth_key = System.get_env("NODE_AUTHKEY")
 
-    options = [hackney: [basic_auth: {"core-#{name}", auth_key}]]
+    options = [hackney: [basic_auth: {"node-#{name}", auth_key}]]
   end
 
   def handle_call({:publish_call, transmitter, data}, _from, chan) do
