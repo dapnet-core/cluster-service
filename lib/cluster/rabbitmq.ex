@@ -7,7 +7,7 @@ defmodule Cluster.RabbitMQ do
     GenServer.start_link(__MODULE__, {}, [name: __MODULE__])
   end
 
-  @exchanges ["dapnet.transmitters", "dapnet.telemetry"]
+  @exchanges ["dapnet.calls", "dapnet.telemetry"]
 
   def publish_call(transmitter, data) do
     GenServer.call(__MODULE__, {:publish_call, transmitter, data})
@@ -30,7 +30,7 @@ defmodule Cluster.RabbitMQ do
 
         Enum.each(@exchanges, fn exchange ->
           Logger.info("Creating #{exchange} exchange.")
-          :ok = Exchange.topic(chan, exchange, durable: true)
+          :ok = Exchange.fanout(chan, exchange, durable: true)
         end)
 
         Process.send_after(self(), :federation, 5000)
@@ -44,12 +44,12 @@ defmodule Cluster.RabbitMQ do
   end
 
   def handle_info(:federation, state) do
-    Cluster.Discovery.reachable_nodes() |> Enum.each(fn {node, _} ->
+    Cluster.Discovery.reachable_nodes() |> Enum.each(fn {node, params} ->
       case federation_get(node) do
         {:ok, %HTTPoison.Response{status_code: 200}} ->
           Logger.debug("Federation with #{node} exists.")
         {:ok, %HTTPoison.Response{status_code: 404}} ->
-          case federation_create(node) do
+          case federation_create(node, params["host"]) do
             {:ok, _} -> Logger.info("Creating federation to #{node}.")
             _ -> Logger.error("Failed to create federation to #{node}.")
           end
@@ -74,12 +74,12 @@ defmodule Cluster.RabbitMQ do
     {:noreply, state}
   end
 
-  def federation_create(node) do
+  def federation_create(node, host) do
     name = System.get_env("NODE_NAME")
     auth_key = System.get_env("NODE_AUTHKEY")
 
     url = "http://rabbitmq:15672/api/parameters/federation-upstream/%2f/#{node}"
-    params = %{value: %{"uri": "amqp://node-#{name}:#{auth_key}@#{node}",
+    params = %{value: %{"uri": "amqp://node-#{name}:#{auth_key}@#{host}",
                         "expires": 3600000,
                         "max-hops": 3
                        }} |> Poison.encode!
