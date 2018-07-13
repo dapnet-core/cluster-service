@@ -67,14 +67,8 @@ defmodule Cluster.Discovery do
 
   def handle_info({ref, result}, nodes) when is_reference(ref) do
     {node, params} = result
-    name = System.get_env("NODE_NAME")
-
-    if node != name do
-      nodes = Map.put(nodes, node, params)
-      {:noreply, nodes}
-    else
-      {:noreply, nodes}
-    end
+    nodes = Map.put(nodes, node, params)
+    {:noreply, nodes}
   end
 
 
@@ -85,7 +79,7 @@ defmodule Cluster.Discovery do
   def handle_call(:nodes, _from, nodes) do
     name = System.get_env("NODE_NAME")
 
-    nodes = nodes |> Map.put(name, %{
+    all_nodes = nodes |> Map.put(name, %{
       "host" => System.get_env("NODE_HOSTNAME"),
       "reachable" => true,
       "last_seen" => Timex.now(),
@@ -95,7 +89,7 @@ defmodule Cluster.Discovery do
       }
     })
 
-    {:reply, nodes, nodes}
+    {:reply, all_nodes, nodes}
   end
 
   def handle_call(:reachable_nodes, _from, nodes) do
