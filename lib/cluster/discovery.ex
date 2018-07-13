@@ -67,9 +67,14 @@ defmodule Cluster.Discovery do
 
   def handle_info({ref, result}, nodes) when is_reference(ref) do
     {node, params} = result
-    nodes = Map.put(nodes, node, params)
+    name = System.get_env("NODE_NAME")
 
-    {:noreply, nodes}
+    if node != name do
+      nodes = Map.put(nodes, node, params)
+      {:noreply, nodes}
+    else
+      {:noreply, nodes}
+    end
   end
 
 
