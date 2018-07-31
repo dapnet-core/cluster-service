@@ -7,8 +7,6 @@ defmodule Cluster.RabbitMQ do
     GenServer.start_link(__MODULE__, {}, [name: __MODULE__])
   end
 
-  @exchanges ["dapnet.calls", "dapnet.telemetry"]
-
   def publish_call(transmitter, data) do
     GenServer.call(__MODULE__, {:publish_call, transmitter, data})
   end
@@ -28,10 +26,11 @@ defmodule Cluster.RabbitMQ do
 
         {:ok, chan} = Channel.open(conn)
 
-        Enum.each(@exchanges, fn exchange ->
-          Logger.info("Creating #{exchange} exchange.")
-          :ok = Exchange.direct(chan, exchange, durable: true)
-        end)
+        Logger.info("Creating dapnet.calls exchange.")
+        :ok = Exchange.direct(chan, "dapnet.calls", durable: true)
+
+        Logger.info("Creating dapnet.telemetry exchange.")
+        :ok = Exchange.fanout(chan, "dapnet.telemetry", durable: true)
 
         Process.send_after(self(), :federation, 5000)
 
