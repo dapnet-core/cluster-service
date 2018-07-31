@@ -30,7 +30,7 @@ defmodule Cluster.RabbitMQ do
 
         Enum.each(@exchanges, fn exchange ->
           Logger.info("Creating #{exchange} exchange.")
-          :ok = Exchange.fanout(chan, exchange, durable: true)
+          :ok = Exchange.direct(chan, exchange, durable: true)
         end)
 
         Process.send_after(self(), :federation, 5000)
