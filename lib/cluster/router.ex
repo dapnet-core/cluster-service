@@ -1,6 +1,8 @@
 defmodule Cluster.Router do
   use Plug.Router
 
+  plug Cluster.Plug.Api
+
   plug :match
   plug :dispatch
 
@@ -17,6 +19,28 @@ defmodule Cluster.Router do
     else
       send_resp(conn, 403, "Forbidden")
     end
+  end
+
+  get "/cluster/nodes" do
+    nodes = Cluster.Discovery.nodes()
+    |> Stream.map(fn {id, node} ->
+      {id, Map.delete(node, "couchdb")}
+    end)
+    |> Map.new
+    |> Poison.encode!
+
+    send_resp(conn, 200, nodes)
+  end
+
+  get "/cluster/reachable_nodes" do
+    nodes = Cluster.Discovery.reachable_nodes()
+    |> Stream.map(fn {id, node} ->
+      {id, Map.delete(node, "couchdb")}
+    end)
+    |> Map.new
+    |> Poison.encode!
+
+    send_resp(conn, 200, nodes)
   end
 
   match _ do
