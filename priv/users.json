@@ -1,0 +1,31 @@
+{
+    "_id": "_design/users",
+    "version": 1,
+    "views": {
+        "byId": {
+            "map": "function (doc) {
+                emit(doc._id, 1);
+            }"
+        }
+    },
+    "lists": {
+        "usernames": "function() {
+            provides('json', function() {
+                var usernames = [];
+                while (row = getRow()) {
+                    if (row.id.charAt(0) != '_') {
+                        usernames.push(row.id)
+                    }
+                }
+                send(JSON.stringify(usernames));
+            })
+        }"
+    },
+    "filters": {
+        "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
+    },
+    "validate_doc_update": "function(newDoc, oldDoc, userCtx, secObj) {
+        if (!newDoc.password) throw({forbidden: 'password required'});
+    }",
+    "language": "javascript"
+}

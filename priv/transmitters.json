@@ -1,0 +1,50 @@
+{
+    "_id": "_design/transmitters",
+    "version": 1,
+    "views": {
+        "map": {
+            "map": "function (doc) {
+                if (doc.coordinates) {
+                    emit(doc._id, {
+                        'usage': doc.usage,
+                        'coordinates': doc.coordinates
+                    });
+                }
+            }"
+        },
+        "byOwners": {
+            "reduce": "_count",
+            "map": "function (doc) {
+                if (doc.owners) {
+                    doc.owners.forEach(function(owner) {
+                        emit(owner, 1);
+                    })
+                }
+            }"
+        },
+        "byGroup": {
+            "reduce": "_count",
+            "map": "function (doc) {
+                if (doc.groups) {
+                    doc.groups.forEach(function(group) {
+                        emit(group.split('.'));
+                    })
+                }
+            }"
+        },
+        "byId": {
+            "map": "function (doc) {
+                emit(doc._id, null);
+            }"
+        }
+    },
+    "filters": {
+        "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
+    },
+    "validate_doc_update": "function(newDoc, oldDoc, userCtx, secObj) {
+        if (!newDoc.auth_key) throw({forbidden: 'auth_key required'});
+        if (!newDoc.timeslots) throw({forbidden: 'timeslots required'});
+        if (newDoc.timeslots.length != 16) throw({forbidden: '16 timeslots required'});
+    }",
+    "language": "javascript"
+}

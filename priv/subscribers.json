@@ -1,0 +1,15 @@
+{
+    "_id": "_design/subscribers",
+    "version": 1,
+    "views": {
+        "byId": {
+            "map": "function (doc) {
+                emit(doc._id, 1);
+            }"
+        }
+    },
+    "filters": {
+        "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
+    },
+    "language": "javascript"
+}

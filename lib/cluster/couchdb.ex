@@ -3,7 +3,7 @@ defmodule Cluster.CouchDB do
   require Logger
 
   @mgmt_databases ["_users", "_replicator", "_global_changes"]
-  @databases ["users", "transmitters", "rubrics", "nodes"]
+  @databases ["users", "transmitters", "subscribers", "rubrics", "nodes"]
 
   def sync_with(node, params), do: GenServer.cast(__MODULE__, {:sync_with, node, params})
   def db(name), do: GenServer.call(__MODULE__, {:db, name})
@@ -27,17 +27,27 @@ defmodule Cluster.CouchDB do
     results = Enum.concat([@databases, @mgmt_databases])
     |> Enum.map(fn name ->
       database = server |> CouchDB.Server.database(name)
-      CouchDB.Database.create database
+      {name, CouchDB.Database.create database}
     end)
 
-    errors = results |> Enum.filter(&match?({:error, _}, &1))
-    |> Enum.map(fn {:error, reason} -> reason end)
-    |> Enum.map(&Poison.decode/1)
-    |> Enum.filter(fn {_, error} -> Map.get(error, "error") != "file_exists" end)
+    errors = Enum.filter(results, &match?({_, {:error, _}}, &1))
+    |> Enum.map(fn {db, {:error, reason}} -> {db, Poison.decode!(reason)} end)
+    |> Enum.filter(fn {_, %{"error" => error}} ->
+      error != "file_exists"
+    end)
+    |> Enum.map(fn {db, error} ->
+      Logger.error("Failed to create database #{db}: #{error}")
+      true
+    end)
 
     if !Enum.empty?(errors) do
-      Logger.error("Can't connect to CouchDB.")
+      Logger.error("Failed to connect to CouchDB.")
       Process.send_after(self(), :migrate, 10000)
+    else
+      Enum.each(@databases, fn db ->
+        database = CouchDB.Server.database(server, db)
+        update_design_doc(db, database)
+      end)
     end
 
     {:noreply, server}
@@ -59,7 +69,7 @@ defmodule Cluster.CouchDB do
 
       result = CouchDB.Server.replicate(server, remote_url, local_url, options)
 
-      Logger.debug "Replication status: #{inspect result}"
+      Logger.debug "Replication status: #{inspect remote_url}"
     end)
 
     {:noreply, server}
@@ -79,6 +89,51 @@ defmodule Cluster.CouchDB do
         end
       _ ->
         {:reply, false, server}
+    end
+  end
+
+  defp update_design_doc(name, database) do
+    Logger.info "Updating design document for #{name}"
+
+    new_doc = Path.join(:code.priv_dir(:cluster), "#{name}.json") |> File.read!
+    |> String.replace("\n", "")
+    |> Poison.decode!
+
+    new_version = new_doc |> Map.get("version")
+
+    current_doc = case database |> CouchDB.Database.get("_design/#{name}") do
+                    {:ok, result} -> result |> Poison.decode!
+                    {:error, _} -> nil
+                  end
+
+    current_version = if current_doc do
+      current_doc |> Map.get("version", 0)
+    else
+      -1
+    end
+
+    result = cond do
+      new_version == current_version ->
+        Logger.info "Design document is up to date (v#{current_version})"
+        nil
+      new_version < current_version ->
+        Logger.error "Design document is newer than internal (v#{current_version} > v#{new_version})"
+        Logger.error "This version of the Cluster service is too old to handle the selected database"
+        nil
+      current_doc ->
+        Logger.info "Updating the design document from v#{current_version} to v#{new_version}..."
+        rev = current_doc |> Map.get("_rev")
+        new_doc = new_doc |> Map.put("_rev", rev)
+        database |> CouchDB.Database.insert(Poison.encode!(new_doc))
+      true ->
+        Logger.info "Creating the design document (v#{new_version})..."
+        database |> CouchDB.Database.insert(Poison.encode!(new_doc))
+    end
+
+    case result do
+      {:ok, _} -> Logger.info "Database successfully updated"
+      {:error, _} -> Logger.warn "Database update failed"
+      _ -> ()
     end
   end
 
