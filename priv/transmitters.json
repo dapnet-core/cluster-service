@@ -1,6 +1,6 @@
 {
     "_id": "_design/transmitters",
-    "version": 2,
+    "version": 3,
     "views": {
         "map": {
             "map": "function (doc) {
@@ -45,6 +45,17 @@
                 body: JSON.stringify(doc.owners)
             };
         }"
+    },
+    "lists": {
+      "names": "function() {
+        provides('json', function() {
+          var names = [];
+            while (row = getRow()) {
+              names.push(row.id)
+            }
+            send(JSON.stringify(names));
+          })
+      }"
     },
     "filters": {
         "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
