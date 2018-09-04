@@ -1,6 +1,6 @@
 {
     "_id": "_design/transmitters",
-    "version": 1,
+    "version": 2,
     "views": {
         "map": {
             "map": "function (doc) {
@@ -37,6 +37,14 @@
                 emit(doc._id, null);
             }"
         }
+    },
+    "shows": {
+        "owners": "function(doc, req) {
+            return {
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(doc.owners)
+            };
+        }"
     },
     "filters": {
         "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"

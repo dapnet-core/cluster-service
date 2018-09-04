@@ -1,6 +1,6 @@
 {
     "_id": "_design/nodes",
-    "version": 1,
+    "version": 2,
     "views": {
         "byId": {
             "map": "function (doc) {
@@ -18,9 +18,7 @@
             provides('json', function() {
                 var nodenames = [];
                 while (row = getRow()) {
-                    if (row.id.charAt(0) != '_') {
-                        nodenames.push(row.id)
-                    }
+                    nodenames.push(row.id)
                 }
                 send(JSON.stringify(nodenames));
             })
@@ -29,12 +27,18 @@
             provides('json', function() {
                 var descriptions = [];
                 while (row = getRow()) {
-                    if (row.id.charAt(0) != '_') {
-                        descriptions.push({_id: row.id, description: row.value})
-                    }
+                    descriptions.push({_id: row.id, description: row.value})
                 }
                 send(JSON.stringify(descriptions));
             })
+        }"
+    },
+    "shows": {
+        "owners": "function(doc, req) {
+            return {
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(doc.owners)
+            };
         }"
     },
     "filters": {

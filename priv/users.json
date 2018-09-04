@@ -1,10 +1,10 @@
 {
     "_id": "_design/users",
-    "version": 1,
+    "version": 2,
     "views": {
         "byId": {
             "map": "function (doc) {
-                emit(doc._id, 1);
+                emit(doc._id, doc.enabled ? 1 : 0);
             }"
         }
     },
@@ -13,9 +13,8 @@
             provides('json', function() {
                 var usernames = [];
                 while (row = getRow()) {
-                    if (row.id.charAt(0) != '_') {
-                        usernames.push(row.id)
-                    }
+                    if (row.value)
+                        usernames.push(row.id);
                 }
                 send(JSON.stringify(usernames));
             })
