@@ -55,6 +55,15 @@
             }
             send(JSON.stringify(names));
           })
+      }",
+      "groups": "function() {
+        provides('json', function() {
+          var groups = [];
+          while (row = getRow()) {
+            groups.push(row.key.join('.'))
+          }
+          send(JSON.stringify(groups));
+        })
       }"
     },
     "filters": {
