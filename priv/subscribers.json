@@ -1,6 +1,6 @@
 {
     "_id": "_design/subscribers",
-    "version": 3,
+    "version": 4,
     "views": {
         "byId": {
             "map": "function (doc) {
@@ -25,6 +25,26 @@
                 body: JSON.stringify(doc.owners)
             };
         }"
+    },
+    "lists": {
+      "names": "function() {
+        provides('json', function() {
+          var names = [];
+            while (row = getRow()) {
+              names.push(row.id)
+            }
+            send(JSON.stringify(names));
+          })
+      }",
+      "groups": "function() {
+        provides('json', function() {
+          var groups = [];
+          while (row = getRow()) {
+            groups.push(row.key.join('.'))
+          }
+          send(JSON.stringify(groups));
+        })
+      }"
     },
     "filters": {
         "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
