@@ -1,10 +1,20 @@
 {
     "_id": "_design/subscribers",
-    "version": 2,
+    "version": 3,
     "views": {
         "byId": {
             "map": "function (doc) {
                 emit(doc._id, 1);
+            }"
+        },
+        "byGroup": {
+            "reduce": "_count",
+            "map": "function (doc) {
+                if (doc.groups) {
+                    doc.groups.forEach(function(group) {
+                        emit(group.split('.'));
+                    })
+                }
             }"
         }
     },

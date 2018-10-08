@@ -27,7 +27,7 @@ defmodule Cluster.RabbitMQ do
         {:ok, chan} = Channel.open(conn)
 
         Logger.info("Creating dapnet.calls exchange.")
-        :ok = Exchange.direct(chan, "dapnet.calls", durable: true)
+        :ok = Exchange.fanout(chan, "dapnet.calls", durable: true)
 
         Logger.info("Creating dapnet.telemetry exchange.")
         :ok = Exchange.fanout(chan, "dapnet.telemetry", durable: true)
