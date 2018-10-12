@@ -101,7 +101,7 @@ defmodule Cluster.RabbitMQ do
 
   def policy_create() do
     url = "http://rabbitmq:15672/api/policies/%2f/dapnet-federation"
-    params = %{"pattern": "^dapnet\.",
+    params = %{"pattern": "^dapnet\.(calls|telemetry)",
                "definition": %{"federation-upstream-set": "all"},
                "apply-to": "exchanges"
               } |> Poison.encode!
