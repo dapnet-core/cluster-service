@@ -30,7 +30,7 @@ defmodule Cluster.RabbitMQ do
         :ok = Exchange.fanout(chan, "dapnet.calls", durable: true)
 
         Logger.info("Creating dapnet.telemetry exchange.")
-        :ok = Exchange.fanout(chan, "dapnet.telemetry", durable: true)
+        :ok = Exchange.topic(chan, "dapnet.telemetry", durable: true)
 
         Process.send_after(self(), :federation, 5000)
 
