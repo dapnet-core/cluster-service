@@ -1,6 +1,6 @@
 {
     "_id": "_design/nodes",
-    "version": 2,
+    "version": 3,
     "views": {
         "byId": {
             "map": "function (doc) {
@@ -45,6 +45,7 @@
         "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
     },
     "validate_doc_update": "function(newDoc, oldDoc, userCtx, secObj) {
+        if (newDoc._deleted) return;
         if (!newDoc.auth_key) throw({forbidden: 'auth_key required'});
     }",
     "language": "javascript"
