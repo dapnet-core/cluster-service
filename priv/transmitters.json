@@ -1,6 +1,6 @@
 {
     "_id": "_design/transmitters",
-    "version": 4,
+    "version": 5,
     "views": {
         "map": {
             "map": "function (doc) {

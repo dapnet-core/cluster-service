@@ -1,6 +1,6 @@
 {
     "_id": "_design/nodes",
-    "version": 3,
+    "version": 4,
     "views": {
         "byId": {
             "reduce": "_count",

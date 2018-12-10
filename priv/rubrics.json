@@ -1,6 +1,6 @@
 {
     "_id": "_design/rubrics",
-    "version": 2,
+    "version": 3,
     "views": {
         "byId": {
             "reduce": "_count",

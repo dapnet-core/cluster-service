@@ -1,6 +1,6 @@
 {
     "_id": "_design/subscribers",
-    "version": 5,
+    "version": 6,
     "views": {
         "byId": {
             "reduce": "_count",
