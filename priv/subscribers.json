@@ -3,6 +3,7 @@
     "version": 5,
     "views": {
         "byId": {
+            "reduce": "_count",
             "map": "function (doc) {
                 emit(doc._id, 1);
             }"
