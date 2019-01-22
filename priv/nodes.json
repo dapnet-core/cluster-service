@@ -1,53 +1,63 @@
 {
-    "_id": "_design/nodes",
-    "version": 4,
-    "views": {
-        "byId": {
-            "reduce": "_count",
-            "map": "function (doc) {
-                emit(doc._id, 1);
-            }"
-        },
-        "descriptions": {
-            "map": "function (doc) {
-                emit(doc._id, doc.description);
-            }"
+  "_id": "_design/nodes",
+  "version": 5,
+  "views": {
+    "descriptions": {
+      "map": "function (doc) {
+        emit(doc._id, doc.description);
+      }"
+    },
+    "byId": {
+      "reduce": "_count",
+      "map": "function (doc) {
+        emit(doc._id, 1);
+      }"
+    },
+    "byOwners": {
+      "reduce": "_count",
+      "map": "function (doc) {
+        if (doc.owners) {
+          doc.owners.forEach(function(owner) {
+            emit(owner, 1);
+          })
         }
-    },
-    "lists": {
-        "names": "function() {
-            provides('json', function() {
-                var nodenames = [];
-                while (row = getRow()) {
-                    nodenames.push(row.id)
-                }
-                send(JSON.stringify(nodenames));
-            })
-        }",
-        "descriptions": "function() {
-            provides('json', function() {
-                var descriptions = [];
-                while (row = getRow()) {
-                    descriptions.push({_id: row.id, description: row.value})
-                }
-                send(JSON.stringify(descriptions));
-            })
-        }"
-    },
-    "shows": {
-        "owners": "function(doc, req) {
-            return {
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(doc.owners)
-            };
-        }"
-    },
-    "filters": {
-        "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
-    },
-    "validate_doc_update": "function(newDoc, oldDoc, userCtx, secObj) {
-        if (newDoc._deleted) return;
-        if (!newDoc.auth_key) throw({forbidden: 'auth_key required'});
-    }",
-    "language": "javascript"
+      }"
+    }
+  },
+  "validate_doc_update": "function(newDoc, oldDoc, userCtx, secObj) {
+    if (newDoc._deleted) return;
+    if (!newDoc.auth_key) throw({forbidden: 'auth_key required'});
+  }",
+  "shows": {
+    "owners": "function(doc, req) {
+      return {
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(doc.owners)
+      };
+    }"
+  },
+  "lists": {
+    "names": "function() {
+      provides('json', function() {
+        var nodenames = [];
+        while (row = getRow()) {
+          nodenames.push(row.id)
+        }
+        send(JSON.stringify(nodenames));
+        })
+      }",
+    "descriptions": "function() {
+      provides('json', function() {
+        var descriptions = [];
+        while (row = getRow()) {
+          descriptions.push({_id: row.id, description: row.value})
+        }
+        send(JSON.stringify(descriptions));
+      })
+    }"
+  },
+  "language": "javascript",
+  "filters": {
+    "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
+  }
 }
