@@ -1,24 +1,21 @@
 {
-    "_id": "_design/rubrics",
-    "version": 3,
-    "views": {
-        "byId": {
-            "reduce": "_count",
-            "map": "function (doc) {
-                emit(doc._id, 1);
-            }"
-        }
-    },
-    "shows": {
-        "owners": "function(doc, req) {
-            return {
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(doc.owners)
-            };
-        }"
-    },
-    "filters": {
-        "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
-    },
-    "language": "javascript"
+  "_id": "_design/rubrics",
+  "_rev": "23-bfa095a16e1f156dfdfa74be29ef290f",
+  "views": {
+    "byId": {
+      "reduce": "_count",
+      "map": "function (doc) {                emit(doc._id, null);            }"
+    }
+  },
+  "version": 4,
+  "shows": {
+    "owners": "function(doc, req) {            return {                headers: {'Content-Type': 'application/json'},                body: JSON.stringify(doc.owners)            };        }"
+  },
+  "lists": {
+    "names": "function() {        provides('json', function() {          var names = [];            while (row = getRow()) {              names.push(row.id)            }            send(JSON.stringify(names));          })      }"
+  },
+  "language": "javascript",
+  "filters": {
+    "sync": "function (doc, req) { return doc._id.charAt(0) != '_'; }"
+  }
 }
