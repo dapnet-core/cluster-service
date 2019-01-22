@@ -19,7 +19,6 @@
       }"
     }
   },
-
   "shows": {
     "owners": "function(doc, req) {
       return {
