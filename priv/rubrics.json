@@ -1,15 +1,25 @@
 {
   "_id": "_design/rubrics",
-  "_rev": "23-bfa095a16e1f156dfdfa74be29ef290f",
+  "version": 5,
   "views": {
     "byId": {
       "reduce": "_count",
       "map": "function (doc) {
         emit(doc._id, null);
       }"
+    },
+    "byOwners": {
+      "reduce": "_count",
+      "map": "function (doc) {
+        if (doc.owners) {
+          doc.owners.forEach(function(owner) {
+            emit(owner, 1);
+          })
+        }
+      }"
     }
   },
-  "version": 4,
+
   "shows": {
     "owners": "function(doc, req) {
       return {
