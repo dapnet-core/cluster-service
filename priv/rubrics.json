@@ -1,6 +1,6 @@
 {
   "_id": "_design/rubrics",
-  "version": 5,
+  "version": 6,
   "views": {
     "byId": {
       "reduce": "_count",
@@ -15,6 +15,41 @@
           doc.owners.forEach(function(owner) {
             emit(owner, 1);
           })
+        }
+      }"
+    },
+    "byNumber": {
+      "map": "function (doc) {
+        if (doc.number) {
+          emit(doc.number, null);
+        }
+      }"
+    },
+    "byFunction": {
+      "map": "function (doc) {
+        if (doc.function) { 
+          emit(doc.function, null); 
+        }
+      }"
+    },
+    "byLabel": {
+      "map": "function (doc) {
+        if (doc.label) {
+          emit(doc.label, null);
+        }
+      }"
+    },
+    "byDescription": {
+      "map": "function (doc) {
+        if (doc.description) {
+          emit(doc.description, null);
+        }
+      }"
+    },
+    "byCyclicTransmit": {
+      "map": "function (doc) {
+        if ('cyclic_transmit' in doc) {
+          emit(doc.cyclic_transmit, null);
         }
       }"
     }
